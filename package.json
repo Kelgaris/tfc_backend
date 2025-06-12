@@ -8,9 +8,9 @@
     "dev": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "David Priego Puga",
   "license": "ISC",
-  "description": "",
+  "description": "Backend para la aplicacion del videojuego de rol basado en Final Fantasy III",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",

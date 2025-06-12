@@ -50,21 +50,14 @@ const upload = multer({ storage });
 //─────────────────────────────────────────────
 // MODELO DE PERSONAJES
 //─────────────────────────────────────────────
-/*
-Campos:
-  - nombre, imagen
-  - atributos: { vit, fuerza, agi, ene, int, esp, ata, def, defm, atax }
-  - equipo: { arma, armadura, accesorio }  
-  - expTotal, nivel, formacion
-*/
 const personajeSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   imagen: { type: String, required: true },
   atributos: {
     vit:    { type: Number, required: true },
-    vit_act: { type: Number, required: true }, // Vitalidad actual
-    pm:     { type: Number, required: true }, // Puntos de magia
-    pm_act: { type: Number, required: true }, // Puntos de magia actual
+    vit_act: { type: Number, required: true }, 
+    pm:     { type: Number, required: true }, 
+    pm_act: { type: Number, required: true }, 
     fuerza: { type: Number, required: true },
     agi:    { type: Number, required: true },
     ene:    { type: Number, required: true },
@@ -103,11 +96,6 @@ const Personaje = mongoose.model('Personaje', personajeSchema);
 //─────────────────────────────────────────────
 // MODELO DE MONSTERS
 //─────────────────────────────────────────────
-/*
-Campos:
-  - img, nombre
-  - vit, nivel, exp, guiles, fuerza, agi, ene, int, esp, ata, def, defm, atax
-*/
 const monsterSchema = new mongoose.Schema({
   img:     { type: String, required: true },
   nombre:  { type: String, required: true },
@@ -132,9 +120,7 @@ const Monster = mongoose.model('Monster', monsterSchema);
 //─────────────────────────────────────────────
 /*
   Se manejan tres tipos: consumible, arma y cuerpo.
-  Nota: Para armaduras se usa el discriminador "cuerpo".
 */
-// Esquema base
 const inventoryBaseSchema = new mongoose.Schema({
   nombre:   { type: String, required: true },
   cantidad: { type: Number, required: true },
@@ -243,37 +229,6 @@ app.get('/api/inventory', async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error al obtener inventario", error });
   }
-});
-
-// RUTAS PARA AUTENTICACIÓN CON JWT
-app.post('/login', (req, res) => {
-  const { username } = req.body;
-  if (!username) return res.status(400).json({ message: 'El username es requerido.' });
-  const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
-  res.status(200).json({ token });
-});
-
-// Middleware para verificar token JWT
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Formato: "Bearer TOKEN"
-  if (!token) return res.sendStatus(401);
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-}
-
-// Ruta protegida de ejemplo
-app.get('/protected', authenticateToken, (req, res) => {
-  res.status(200).json({ message: 'Acceso a ruta protegida', user: req.user });
-});
-
-// (Opcional) Ruta para subir archivos
-app.post('/upload', upload.single('archivo'), (req, res) => {
-  if (!req.file) return res.status(400).json({ message: 'No se subió ningún archivo' });
-  res.status(200).json({ message: 'Archivo subido con éxito', file: req.file });
 });
 
 // PATCH /api/personajes/:id/equipo
