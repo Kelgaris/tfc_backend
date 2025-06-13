@@ -1,3 +1,30 @@
+/*───────────────────────────────────────────────────────
+  Proyecto Final: Final Fantasy III Fan
+
+  Autor:        David Priego Puga
+  Curso:        Desarrollo de Aplicaciones Web
+  Fecha:        13 de Junio de 2025
+  Archivo:      server.js
+
+  Descripción:
+  -------------------------------------------------------
+  En este archivo podemos encontrar toda la configuración
+  y logica del servidor backend de nuestro videojuego.
+  
+  De tal forma que podamos encontrar: dependiencias,
+  conexión a la base de datos, modelos de datos y
+  rutas de la API.
+
+  Tenemos personajes, monsters, inventario y magias.
+  Además de un bulk de personajes para poder
+  actualizar varios personajes a la vez.
+
+  Además de endpoints para obtener la posición de un personaje
+  y para recoger y actualizar el equipo de un personaje.
+  También tenemos un endpoint para lanzar magias y repartir
+  curación entre varios personajes.
+───────────────────────────────────────────────────────*/
+
 // Cargar variables de entorno desde .env
 require('dotenv').config();
 
@@ -30,13 +57,13 @@ mongoose.connect(MONGO_URI, {
 .then(() => console.log('Conectado a MongoDB'))
 .catch(err => console.error('Error al conectar a MongoDB:', err));
 
-// Verificar y crear carpeta "uploads" si no existe
+// VERIFICAR Y CREAR CARPETA "uploads" SI NO EXISTE.
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-// CONFIGURACIÓN DE MULTER (para subir archivos, opcional)
+// CONFIGURACIÓN DE MULTER (OPCIONAL)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -147,6 +174,7 @@ efectoSchema.pre('validate', function(next) {
   }
   next();
 });
+// A) Consumibles (tipo: "consumible")
 const consumableSchema = new mongoose.Schema({
   descripcion: { type: String, required: true },
   efecto:      { type: efectoSchema, required: true }
@@ -196,7 +224,7 @@ async function recalcularAtributos(pj) {
 // RUTAS DE LA API
 //─────────────────────────────────────────────
 
-// Ruta raíz de prueba
+// RUTA DE PRUEBA PARA VERIFICAR QUE EL SERVIDOR ESTÁ CORRIENDO.
 app.get('/', (req, res) => {
   res.send("Servidor backend del videojuego");
 });
@@ -247,6 +275,7 @@ app.patch('/api/personajes/:id/equipo', async (req, res) => {
   res.json(pj);
 });
 
+// GET PARA RECUPERAR LA POSICIÓN DE UN PERSONAJE PARA USAR EN EL MAPA.
 app.get('/api/personajes/:id/posicion', async (req, res) => {
   try {
     const pj = await Personaje.findById(req.params.id);
@@ -260,7 +289,7 @@ app.get('/api/personajes/:id/posicion', async (req, res) => {
 });
 
 // PATCH /api/personajes/formacion  
-// Cuerpo: { formaciones: [{ id, formacion }, ...] }
+// Cuerpo: { formaciones: [{ id: "<_id>", formacion: "vanguardia|retaguardia" }] }
 app.patch('/api/personajes/formacion', async (req, res) => {
   const formaciones = req.body.formaciones;
   if (!Array.isArray(formaciones)) {
@@ -282,6 +311,7 @@ app.patch('/api/personajes/formacion', async (req, res) => {
 });
 
 // ─── PATCH /api/personajes/bulk ─────────────────────────────
+// EL BULK DE PERSONAJES PERMITE ACTUALIZAR MÚLTIPLES PERSONAJES A LA VEZ.
 app.patch('/api/personajes/bulk', async (req, res) => {
   try {
     const updates = req.body.personajes;
@@ -310,6 +340,7 @@ app.patch('/api/personajes/bulk', async (req, res) => {
         });
       }
 
+      // posicion del personaje
       if(pj.posicion){
         if(pj.posicion.pos_x != null) upd['posicion.pos_x'] = pj.posicion.pos_x;
         if(pj.posicion.pos_y != null) upd['posicion.pos_y'] = pj.posicion.pos_y;
